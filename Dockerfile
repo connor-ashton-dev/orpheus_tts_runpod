@@ -25,4 +25,4 @@ COPY . .
 
 # Run main.py when the container launches (adjust as necessary)
 # You might need to change "main.py" to your actual entry point script
-CMD ["python", "main.py"] 
+CMD ["python", "rp_handler.py"] 
