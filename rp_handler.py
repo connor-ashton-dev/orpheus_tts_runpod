@@ -4,17 +4,34 @@ from orpheus_tts import OrpheusModel
 import wave
 import base64
 
-
-model = OrpheusModel(model_name ="canopylabs/orpheus-tts-0.1-finetune-prod")
+# Global variable to cache the model within a worker
+model = None
 
 def handler(event):
+    global model # Use the global model variable
     print('worker start')
-    input = event['input']
 
-    prompt = input.get('prompt')
+    # Initialize model on first call within the worker
+    if model is None:
+        print("Initializing OrpheusModel...")
+        model = OrpheusModel(model_name="canopylabs/orpheus-tts-0.1-finetune-prod")
+        print("Model initialized.")
+
+    input_data = event['input']
+
+    prompt = input_data.get('prompt')
+    # seconds = input_data.get('seconds', 0) # Removed as per previous edit
+
+    if not prompt:
+        return { "error": "Prompt is required" } # Add basic input validation
+
     print(f"Received prompt: {prompt}")
 
     start_time = time.monotonic()
+
+    # Check if model is initialized before using
+    if model is None:
+        return { "error": "Model not initialized" } # Should not happen with the check above, but good practice
 
     syn_tokens = model.generate_speech(
         prompt=prompt,
@@ -43,7 +60,8 @@ def handler(event):
     with open(output_filename, "rb") as audio_file:
         encoded_audio = base64.b64encode(audio_file.read()).decode('utf-8')
 
-    return encoded_audio
+    return encoded_audio # Return base64 string
 
 if __name__ == '__main__':
-    runpod.serverless.start({"handler": handler, "return_aggregate_stream": True,  })
+    # Ensure return_aggregate_stream is False if returning single base64 output
+    runpod.serverless.start({"handler": handler, "return_aggregate_stream": False })
