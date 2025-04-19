@@ -1,28 +1,43 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# Base Image
+FROM nvidia/cuda:12.1.0-base-ubuntu22.04
 
-# Set the working directory in the container
-WORKDIR /app
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.11, pip, git, and other essentials
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    git \
+    wget \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Update pip, setuptools, wheel
+RUN python3.11 -m pip install --upgrade pip setuptools wheel
 
 # Install uv
-RUN pip install uv
+RUN python3.11 -m pip install uv
 
-# Copy dependency definition files
-COPY pyproject.toml uv.lock* ./
+# Set the working directory
+WORKDIR /app
 
-# Install dependencies using uv sync for speed and consistency
-# Using --strict ensures only locked dependencies are installed
-RUN uv pip sync --strict uv.lock
+# Copy only the dependency specification first
+COPY pyproject.toml ./
 
-# Copy the rest of the application code into the container at /app
+# Install dependencies using uv based on pyproject.toml
+# This resolves dependencies inside the container environment
+# Using --system installs into the main Python environment, not a venv
+RUN uv pip install -p python3.11 --system .
+
+# Copy the rest of the application code
 COPY . .
 
-# Define environment variables (if any)
-# ENV NAME=value
-
-# Make port 8000 available to the world outside this container (if needed for web apps)
-# EXPOSE 8000
-
-# Run main.py when the container launches (adjust as necessary)
-# You might need to change "main.py" to your actual entry point script
-CMD ["python", "rp_handler.py"] 
+# Run the application handler
+# Use -u for unbuffered output, helpful for logging in containers
+CMD ["python3.11", "-u", "rp_handler.py"] 
