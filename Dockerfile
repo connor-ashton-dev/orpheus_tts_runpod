@@ -1,48 +1,24 @@
-# Base Image
-FROM nvidia/cuda:12.1.0-base-ubuntu22.04
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim-buster
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install Python 3.11, pip, git, espeak-ng, and other essentials
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
-    git \
-    wget \
-    espeak-ng \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-dev \
-    python3.11-venv \
-    python3-pip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Update pip, setuptools, wheel
-RUN python3.11 -m pip install --upgrade pip setuptools wheel
-
-# Install uv
-RUN python3.11 -m pip install uv
-
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy only the dependency specification first
-COPY pyproject.toml ./
+# Copy the requirements file into the container at /app
+COPY requirements.txt .
 
-# Install dependencies using uv based on pyproject.toml
-# This resolves dependencies inside the container environment
-# Using --system installs into the main Python environment, not a venv
-RUN uv pip install -p python3.11 --system .
+# Install any needed packages specified in requirements.txt
+# --no-cache-dir reduces image size, --upgrade ensures latest pip
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Install Kokoro TTS specific dependencies
-RUN python3.11 -m pip install --no-cache-dir kokoro>=0.9.4 soundfile
+# Download and cache the Orpheus TTS model
+# Replace model_name if you want to use a different one
+RUN python -c "from orpheus_tts import OrpheusModel; print('Downloading model...'); model = OrpheusModel(model_name='canopylabs/orpheus-tts-0.1-finetune-prod'); print('Model download complete.')"
 
-# Copy the rest of the application code
-# Copy application code *after* dependencies are installed for better caching
-COPY . .
+# Copy the handler file into the container at /app
+COPY handler.py .
 
-# Run the application handler
-# Use -u for unbuffered output, helpful for logging in containers
-CMD ["python3.11", "-u", "rp_handler.py"] 
+# Run handler.py when the container launches
+# -u ensures that Python output is sent straight to terminal without being buffered
+CMD [ "python", "-u", "handler.py" ] 

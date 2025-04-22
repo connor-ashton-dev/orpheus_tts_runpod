@@ -1,0 +1,8 @@
+requests
+sounddevice
+scipy
+numpy
+pynput
+python-dotenv 
+runpod
+orpheus-speech
