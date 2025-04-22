@@ -5,7 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "kokoro>=0.9.4",
+    "openai>=1.75.0",
     "orpheus-speech>=0.1.0",
+    "pip>=25.0.1",
     "runpod>=1.7.9",
+    "sounddevice>=0.5.1",
+    "soundfile>=0.13.1",
     "wave>=0.0.2",
 ]

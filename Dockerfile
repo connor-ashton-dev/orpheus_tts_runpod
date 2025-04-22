@@ -3,11 +3,12 @@ FROM nvidia/cuda:12.1.0-base-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Python 3.11, pip, git, and other essentials
+# Install Python 3.11, pip, git, espeak-ng, and other essentials
 RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     git \
     wget \
+    espeak-ng \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -35,7 +36,11 @@ COPY pyproject.toml ./
 # Using --system installs into the main Python environment, not a venv
 RUN uv pip install -p python3.11 --system .
 
+# Install Kokoro TTS specific dependencies
+RUN python3.11 -m pip install --no-cache-dir kokoro>=0.9.4 soundfile
+
 # Copy the rest of the application code
+# Copy application code *after* dependencies are installed for better caching
 COPY . .
 
 # Run the application handler
