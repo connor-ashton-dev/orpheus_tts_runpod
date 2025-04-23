@@ -1,10 +1,14 @@
 import runpod
 from orpheus_tts import OrpheusModel
 
-engine = OrpheusModel(model_name="canopylabs/orpheus-tts-0.1-finetune-prod")
-
+engine = None # Initialize lazily
 
 def generator_handler(job):
+    global engine # Declare intent to modify global engine
+    if engine is None:
+        print("Initializing OrpheusModel...")
+        engine = OrpheusModel(model_name="canopylabs/orpheus-tts-0.1-finetune-prod")
+        print("OrpheusModel initialized.")
 
     job_input = job['input']
     text = job_input.get('text', "Welcome to RunPod's text-to-speech simulator!")
@@ -28,4 +32,5 @@ def generator_handler(job):
     yield {"status": "completed", "message": "Text-to-speech conversion completed"}
 
 if __name__ == "__main__":
+    # Model initialization is now deferred until the handler runs
     runpod.serverless.start({"handler": generator_handler})
