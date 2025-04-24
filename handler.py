@@ -1,6 +1,6 @@
 import runpod
 import base64
-from orpheus_tts import OrpheusModel
+from orpheus_speech import OrpheusModel
 import json
 import sys
 
