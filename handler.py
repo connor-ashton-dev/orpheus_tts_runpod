@@ -19,7 +19,7 @@ def text_to_speech_generator(text, voice="tara"):
     init()
     
     # Process audio chunks as they're generated
-    audio_bytes = generator.generate_speech(
+    audio_bytes = generator.generate_stream(
             prompt=text,
             voice=voice,
             repetition_penalty=1.1,
@@ -78,4 +78,7 @@ if __name__ == "__main__":
         else:
             print("Error: --test_input requires a JSON string argument")
     else:
-        runpod.serverless.start({"handler": generator_handler}) 
+        runpod.serverless.start({
+            "handler": generator_handler,
+            "return_aggregate_stream": True  # This ensures the stream results are returned in /run and /runsync
+        }) 
