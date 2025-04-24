@@ -1,7 +1,7 @@
 import runpod
 import torch
 import torchaudio
-from generator import load_csm_1b
+from csm_streaming.generator import load_csm_1b
 import io
 import base64
 import json
