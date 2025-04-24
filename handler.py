@@ -19,7 +19,6 @@ def generator_handler(job):
     syn_tokens = engine.generate_speech(
             prompt=text,
             voice="tara",
-            max_model_len=65536,
             repetition_penalty=1.1,
             stop_token_ids=[128258],
             temperature=0.4,
