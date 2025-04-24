@@ -20,13 +20,6 @@ RUN python3.10 -m pip install --upgrade pip setuptools wheel
 # Set up working directory
 WORKDIR /app
 
-# Clone and install Orpheus TTS
-RUN git clone https://github.com/canopyai/Orpheus-TTS.git && \
-    cd Orpheus-TTS && \
-    pip install orpheus-speech && \
-    cd .. && \
-    rm -rf Orpheus-TTS
-
 # Install the specific dependencies required
 RUN python3.10 -m pip install --no-cache-dir \
     torch==2.4.0 \
@@ -40,7 +33,9 @@ RUN python3.10 -m pip install --no-cache-dir \
     scipy>=1.7.0 \
     tqdm>=4.65.0 \
     safetensors>=0.3.0 \
-    torchtune==0.4.0 
+    torchtune==0.4.0 \
+    orpheus-speech \
+    vllm==0.7.3
 
 # Copy our handler and other files
 COPY handler.py /app/
