@@ -19,14 +19,9 @@ def text_to_speech_generator(text, voice="tara"):
     init()
     
     # Process audio chunks as they're generated
-    audio_bytes = generator.generate_stream(
+    audio_bytes = generator.generate_speech(
             prompt=text,
             voice=voice,
-            repetition_penalty=1.1,
-            stop_token_ids=[128258],
-            max_tokens=2000,
-            temperature=0.4,
-            top_p=0.9
     )
     for audio_chunk in audio_bytes:
         # Convert to base64
