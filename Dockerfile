@@ -21,15 +21,8 @@ RUN python3.10 -m pip install --upgrade pip setuptools wheel
 # Install the specific dependencies required
 RUN python3.10 -m pip install --no-cache-dir \
     torch==2.4.0 \
-    torchaudio==2.4.0
-
-# Install FlashInfer for improved performance
-RUN git clone https://github.com/flashinfer-ai/flashinfer.git && \
-    cd flashinfer && \
-    git checkout v0.0.1 && \
-    pip install -e . && \
-    cd .. && \
-    rm -rf flashinfer
+    torchaudio==2.4.0 \
+    flashinfer
 
 # Set working directory
 WORKDIR /app
