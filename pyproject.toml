@@ -5,12 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "numpy>=2.2.5",
-    "orpheus-speech>=0.1.0",
-    "pynput>=1.8.1",
-    "python-dotenv>=1.1.0",
-    "requests>=2.32.3",
-    "runpod>=1.7.9",
-    "scipy>=1.15.2",
-    "sounddevice>=0.5.1",
+    "numpy>=1.21.0",
+    "runpod>=1.0.0",
+    "scipy>=1.7.0",
+    "sounddevice>=0.4.5",
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "tqdm>=4.65.0",
+    "transformers>=4.30.0",
 ]
