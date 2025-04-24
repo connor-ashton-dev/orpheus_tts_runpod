@@ -33,25 +33,11 @@ RUN python3.10 -m pip install --no-cache-dir \
     scipy>=1.7.0 \
     tqdm>=4.65.0 \
     safetensors>=0.3.0 \
-    torchtune==0.4.0
-
-# Clone the CSM streaming repository and set up the module structure
-RUN git clone https://github.com/davidbrowne17/csm-streaming.git /app/csm && \
-    mkdir -p /app/csm_streaming && \
-    cp /app/csm/generator.py /app/csm_streaming/ && \
-    cp /app/csm/models.py /app/csm_streaming/ && \
-    cp /app/csm/config.py /app/csm_streaming/ && \
-    touch /app/csm_streaming/__init__.py && \
-    rm -rf /app/csm
+    torchtune==0.4.0 
 
 # Copy our handler and other files
 COPY handler.py /app/
 COPY requirements.txt /app/
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV CUDA_VISIBLE_DEVICES=0
-ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Command to run the application
 CMD ["python3.10", "-u", "/app/handler.py"] 

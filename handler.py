@@ -1,9 +1,6 @@
 import runpod
-import torch
-import torchaudio
-from csm_streaming.generator import load_csm_1b
-import io
 import base64
+from orpheus_tts import OrpheusModel
 import json
 import sys
 
@@ -13,32 +10,31 @@ generator = None
 def init():
     global generator
     if generator is None:
-        generator = load_csm_1b("cuda")
+        generator = OrpheusModel(model_name="canopylabs/orpheus-tts-0.1-finetune-prod")
 
-def text_to_speech_generator(text, speaker=0, context=None):
+def text_to_speech_generator(text, voice="tara"):
     """
     Generator function that yields audio chunks as they're generated
     """
     init()
     
     # Process audio chunks as they're generated
-    for audio_chunk in generator.generate_stream(
-        text=text,
-        speaker=speaker,
-        context=context or []
-    ):
-        # Convert chunk to bytes
-        buffer = io.BytesIO()
-        torchaudio.save(buffer, audio_chunk.unsqueeze(0), generator.sample_rate, format="wav")
-        audio_bytes = buffer.getvalue()
-        
+    audio_bytes = generator.generate_stream(
+            prompt=text,
+            voice=voice,
+            repetition_penalty=1.1,
+            stop_token_ids=[128258],
+            max_tokens=2000,
+            temperature=0.4,
+            top_p=0.9
+    )
+    for audio_chunk in audio_bytes:
         # Convert to base64
-        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
+        audio_base64 = base64.b64encode(audio_chunk).decode('utf-8')
         
         yield {
             "status": "processing",
             "audio": audio_base64,
-            "sample_rate": generator.sample_rate
         }
     
     yield {
@@ -52,8 +48,7 @@ def generator_handler(job):
     """
     job_input = job['input']
     text = job_input.get('text', "")
-    speaker = job_input.get('speaker', 0)
-    context = job_input.get('context', [])
+    speaker = job_input.get('speaker', "tara")
     
     if not text:
         yield {
@@ -65,7 +60,7 @@ def generator_handler(job):
     print(f"TTS Generator | Starting job {job['id']}")
     print(f"Processing text: {text}")
     
-    for result in text_to_speech_generator(text, speaker, context):
+    for result in text_to_speech_generator(text, speaker):
         yield result
 
 if __name__ == "__main__":

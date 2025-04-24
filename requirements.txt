@@ -9,3 +9,4 @@ tqdm>=4.65.0
 huggingface-hub>=0.16.0
 einops>=0.6.0
 safetensors>=0.3.0 
+orpheus-speech>=0.1.0
