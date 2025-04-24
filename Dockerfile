@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     git \
     wget \
     software-properties-common \
+    build-essential \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update \
     && apt-get install -y \
@@ -21,6 +22,14 @@ RUN python3.10 -m pip install --upgrade pip setuptools wheel
 RUN python3.10 -m pip install --no-cache-dir \
     torch==2.4.0 \
     torchaudio==2.4.0
+
+# Install FlashInfer for improved performance
+RUN git clone https://github.com/flashinfer-ai/flashinfer.git && \
+    cd flashinfer && \
+    git checkout v0.0.1 && \
+    pip install -e . && \
+    cd .. && \
+    rm -rf flashinfer
 
 # Set working directory
 WORKDIR /app
