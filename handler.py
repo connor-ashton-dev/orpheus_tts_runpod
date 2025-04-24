@@ -1,4 +1,5 @@
 import runpod
+import base64
 from orpheus_tts import OrpheusModel
 
 engine = None # Initialize lazily
@@ -26,7 +27,9 @@ def generator_handler(job):
         )
     
     for audio_chunk in syn_tokens:
-        yield {"status": "processing", "chunk": audio_chunk}
+        # Encode the audio chunk as base64 string
+        audio_base64 = base64.b64encode(audio_chunk).decode('utf-8')
+        yield {"status": "processing", "chunk": audio_base64}
     
     yield {"status": "completed", "message": "Text-to-speech conversion completed"}
 
