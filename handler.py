@@ -3,6 +3,7 @@ import base64
 from orpheus_tts import OrpheusModel
 import json
 import sys
+import audioop
 
 # Initialize the model
 generator = None
@@ -24,8 +25,9 @@ def text_to_speech_generator(text, voice="tara"):
             voice=voice,
     )
     for audio_chunk in audio_bytes:
-        # Convert to base64
-        audio_base64 = base64.b64encode(audio_chunk).decode('utf-8')
+        # Convert PCM chunk to 8-bit μ-law
+        mu_law_chunk = audioop.lin2ulaw(audio_chunk, 2)
+        audio_base64 = base64.b64encode(mu_law_chunk).decode('utf-8')
         
         yield {
             "status": "processing",
