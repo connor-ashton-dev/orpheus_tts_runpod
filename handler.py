@@ -8,38 +8,34 @@ import audioop
 # Initialize the model
 generator = None
 
+ORIG_SR = 24_000
+TARGET_SR = 8_000
+SAMPLE_W = 2
+
 def init():
     global generator
     if generator is None:
         generator = OrpheusModel(model_name="canopylabs/orpheus-tts-0.1-finetune-prod")
 
-def text_to_speech_generator(text, voice="tara"):
-    """
-    Generator function that yields audio chunks as they're generated
-    """
+def text_to_speech_generator(text: str, voice: str = "tara"):
     init()
-    
-    # Process audio chunks as they're generated
-    audio_bytes = generator.generate_speech(
-            prompt=text,
-            voice=voice,
-    )
-    for audio_chunk in audio_bytes:
-        print(f"Audio chunk: {len(audio_chunk)}")
-        # Resample to 8000 Hz which is standard for μ-law encoding
-        original_rate = 24000
-        target_rate = 8000
-        resampled_chunk = audioop.ratecv(audio_chunk, 2, 1, original_rate, target_rate, None)[0]
 
-        # Convert PCM chunk to 8-bit μ-law
-        mu_law_chunk = audioop.lin2ulaw(resampled_chunk, 2)
-        audio_base64 = base64.b64encode(mu_law_chunk).decode('utf-8')
-        
-        yield {
-            "status": "processing",
-            "audio": audio_base64,
-        }
-    
+    rate_state = None
+    for pcm24 in generator.generate_speech(prompt=text, voice=voice):
+        # 1. resample – preserve rate_state across calls
+        pcm8, rate_state = audioop.ratecv(pcm24, SAMPLE_W, 1, ORIG_SR, TARGET_SR, rate_state)
+
+        # 2. PCM -> μ-law conversion
+        ulaw = audioop.lin2ulaw(pcm8, SAMPLE_W)
+
+        # 3. split into 20ms / 160-byte frames
+        while len(ulaw) >= 160:
+            frame, ulaw = ulaw[:160], ulaw[160:]
+            yield {
+                "status": "processing",
+                "audio": base64.b64encode(frame).decode('utf-8'),
+            }
+
     yield {
         "status": "completed",
         "message": "Text-to-speech conversion completed"
