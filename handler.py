@@ -25,6 +25,7 @@ def text_to_speech_generator(text, voice="tara"):
             voice=voice,
     )
     for audio_chunk in audio_bytes:
+        print(f"Audio chunk: {len(audio_chunk)}")
         # Resample to 8000 Hz which is standard for μ-law encoding
         original_rate = 24000
         target_rate = 8000
