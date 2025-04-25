@@ -25,7 +25,6 @@ def text_to_speech_generator(text, voice="tara"):
             voice=voice,
     )
     for audio_chunk in audio_bytes:
-        # Assuming Orpheus outputs 24000 Hz audio with 16-bit samples (2 bytes per sample)
         # Resample to 8000 Hz which is standard for μ-law encoding
         original_rate = 24000
         target_rate = 8000
