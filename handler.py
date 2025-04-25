@@ -25,8 +25,14 @@ def text_to_speech_generator(text, voice="tara"):
             voice=voice,
     )
     for audio_chunk in audio_bytes:
+        # Assuming Orpheus outputs 24000 Hz audio with 16-bit samples (2 bytes per sample)
+        # Resample to 8000 Hz which is standard for μ-law encoding
+        original_rate = 24000
+        target_rate = 8000
+        resampled_chunk = audioop.ratecv(audio_chunk, 2, 1, original_rate, target_rate, None)[0]
+
         # Convert PCM chunk to 8-bit μ-law
-        mu_law_chunk = audioop.lin2ulaw(audio_chunk, 2)
+        mu_law_chunk = audioop.lin2ulaw(resampled_chunk, 2)
         audio_base64 = base64.b64encode(mu_law_chunk).decode('utf-8')
         
         yield {
